@@ -14,11 +14,24 @@ export default function Home() {
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-6 space-y-5">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center gap-3">
+        <div
+          className="flex items-center justify-center rounded-2xl text-white shrink-0"
+          style={{
+            width: 44,
+            height: 44,
+            background: "linear-gradient(135deg, #6366f1, #0e7490)",
+            boxShadow: "0 4px 14px rgba(99,102,241,0.28)",
+            fontSize: 20,
+          }}
+          aria-hidden
+        >
+          ✦
+        </div>
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">AI Planner</h1>
+          <h1 className="text-2xl font-bold tracking-tight">AI Planner</h1>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Your executive assistant for time.
+            Your executive assistant for time — a well-orchestrated day.
           </p>
         </div>
       </header>

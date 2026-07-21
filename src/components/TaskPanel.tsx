@@ -4,10 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import type { Task, TaskPriority } from "@/lib/types";
 
 const PRIORITY_COLOR: Record<TaskPriority, string> = {
-  low: "#8b98ad",
-  medium: "#22d3ee",
-  high: "#fbbf24",
-  urgent: "#f87171",
+  low: "#64748b",
+  medium: "#0e7490",
+  high: "#c2620a",
+  urgent: "#dc2626",
 };
 
 export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
