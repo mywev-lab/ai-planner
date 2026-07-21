@@ -34,3 +34,21 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
 }
+
+export interface BriefingItem {
+  title: string;
+  note?: string;
+}
+
+export interface FocusBlockItem {
+  time: string;
+  note?: string;
+}
+
+export interface BriefingContent {
+  priorities: BriefingItem[];
+  meetings: BriefingItem[];
+  focusBlocks: FocusBlockItem[];
+  tasksAtRisk: BriefingItem[];
+  productivityTip: BriefingItem | null;
+}

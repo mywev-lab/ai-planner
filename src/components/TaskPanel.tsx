@@ -3,18 +3,18 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Task, TaskPriority } from "@/lib/types";
 
-const PRIORITY_COLOR: Record<TaskPriority, string> = {
-  low: "#64748b",
-  medium: "#0e7490",
-  high: "#c2620a",
-  urgent: "#dc2626",
-};
-
 const PRIORITY_LABEL: Record<TaskPriority, string> = {
   low: "baixa",
   medium: "média",
   high: "alta",
   urgent: "urgente",
+};
+
+const PRIORITY_STYLE: Record<TaskPriority, { bg: string; color: string }> = {
+  low: { bg: "#eee6d6", color: "#877d6d" },
+  medium: { bg: "#ece0cb", color: "#9a7c4f" },
+  high: { bg: "#f6d9c2", color: "#c1743f" },
+  urgent: { bg: "#f2cfc9", color: "#bd524a" },
 };
 
 export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
@@ -83,21 +83,22 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
   }
 
   return (
-    <section className="panel p-5">
-      <h2 className="text-lg font-bold mb-3">✅ Tarefas</h2>
+    <section className="card p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="icon-badge" aria-hidden>✅</span>
+        <h2 className="serif text-2xl leading-tight">Tarefas</h2>
+      </div>
 
       <form onSubmit={addTask} className="space-y-2 mb-4">
         <input
-          className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-          style={{ background: "var(--panel-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+          className="w-full rounded-full px-4 py-2.5 text-sm outline-none"
           placeholder="Nova tarefa…"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
         <div className="flex gap-2">
           <select
-            className="rounded-lg px-2 py-2 text-sm flex-1"
-            style={{ background: "var(--panel-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+            className="rounded-full px-3 py-2.5 text-sm flex-1"
             value={priority}
             onChange={(e) => setPriority(e.target.value as TaskPriority)}
           >
@@ -107,15 +108,14 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
             <option value="urgent">Urgente</option>
           </select>
           <input
-            className="rounded-lg px-2 py-2 text-sm w-24"
-            style={{ background: "var(--panel-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+            className="rounded-full px-3 py-2.5 text-sm w-20 text-center"
             placeholder="min"
             inputMode="numeric"
             value={minutes}
             onChange={(e) => setMinutes(e.target.value)}
           />
-          <button className="btn btn-primary" disabled={loading || !title.trim()}>
-            Adicionar
+          <button className="btn btn-dark" disabled={loading || !title.trim()}>
+            + Add
           </button>
         </div>
       </form>
@@ -128,47 +128,61 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
             Nenhuma tarefa ainda. Adicione uma, ou peça ao assistente para planejar seu dia.
           </li>
         )}
-        {tasks.map((t) => (
-          <li
-            key={t.id}
-            className="flex items-center gap-2 rounded-lg px-3 py-2"
-            style={{ background: "var(--panel-2)" }}
-          >
-            <input
-              type="checkbox"
-              checked={t.status === "done"}
-              onChange={() => toggleDone(t)}
-            />
-            <span
-              className="flex-1 text-sm"
-              style={{
-                textDecoration: t.status === "done" ? "line-through" : "none",
-                color: t.status === "done" ? "var(--muted)" : "var(--text)",
-              }}
+        {tasks.map((t) => {
+          const done = t.status === "done";
+          const ps = PRIORITY_STYLE[t.priority];
+          return (
+            <li
+              key={t.id}
+              className="group flex items-center gap-3 rounded-2xl px-4 py-3"
+              style={{ background: "var(--panel-2)", border: "1px solid var(--border)" }}
             >
-              {t.title}
-              {t.estimated_minutes ? (
-                <span style={{ color: "var(--muted)" }}> · {t.estimated_minutes}m</span>
-              ) : null}
-            </span>
-            <span className="badge" style={{ color: PRIORITY_COLOR[t.priority] }}>
-              {PRIORITY_LABEL[t.priority]}
-            </span>
-            {t.status === "scheduled" && (
-              <span className="badge" style={{ color: "var(--accent-2)" }}>
-                agendada
+              <button
+                onClick={() => toggleDone(t)}
+                aria-label={done ? "Marcar como pendente" : "Concluir"}
+                className="flex items-center justify-center shrink-0"
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 999,
+                  border: `1.5px solid ${done ? "var(--accent)" : "var(--border-strong)"}`,
+                  background: done ? "var(--accent)" : "transparent",
+                  color: "#fff",
+                  fontSize: 11,
+                  lineHeight: 1,
+                }}
+              >
+                {done ? "✓" : ""}
+              </button>
+
+              <span
+                className="flex-1 text-sm"
+                style={{
+                  textDecoration: done ? "line-through" : "none",
+                  color: done ? "var(--muted-soft)" : "var(--text)",
+                }}
+              >
+                {t.title}
+                {t.estimated_minutes ? (
+                  <span style={{ color: "var(--muted)" }}> · {t.estimated_minutes}m</span>
+                ) : null}
               </span>
-            )}
-            <button
-              className="text-sm"
-              style={{ color: "var(--muted)" }}
-              onClick={() => remove(t)}
-              aria-label="Delete task"
-            >
-              ✕
-            </button>
-          </li>
-        ))}
+
+              <span className="badge" style={{ background: ps.bg, color: ps.color }}>
+                {PRIORITY_LABEL[t.priority]}
+              </span>
+
+              <button
+                className="text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ color: "var(--muted)" }}
+                onClick={() => remove(t)}
+                aria-label="Excluir tarefa"
+              >
+                ✕
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

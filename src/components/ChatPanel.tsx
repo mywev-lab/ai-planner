@@ -34,10 +34,8 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
         body: JSON.stringify({ messages: next }),
       });
       const json = await res.json();
-      const reply =
-        json.reply ?? json.error ?? "Algo deu errado. Tente novamente.";
+      const reply = json.reply ?? json.error ?? "Algo deu errado. Tente novamente.";
       setMessages([...next, { role: "assistant", content: reply }]);
-      // If the agent changed calendar/tasks, let the dashboard refresh.
       if (json.toolCalls?.length && onAction) onAction();
     } catch {
       setMessages([
@@ -53,25 +51,27 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
   }
 
   return (
-    <section className="panel flex flex-col" style={{ height: "72vh" }}>
-      <div className="px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
-        <h2 className="text-lg font-bold">💬 Assistente</h2>
+    <section className="card flex flex-col" style={{ height: "100%", minHeight: "32rem" }}>
+      <div className="px-6 pt-6 pb-3 flex items-center gap-3">
+        <span className="icon-badge" aria-hidden>💬</span>
+        <div>
+          <h2 className="serif text-2xl leading-tight">Assistente</h2>
+          <p className="text-sm" style={{ color: "var(--muted)" }}>
+            Planeje, agende, revise
+          </p>
+        </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-3 space-y-3">
         {messages.length === 0 && (
           <div className="space-y-3">
             <p style={{ color: "var(--muted)" }} className="text-sm">
               Peça para planejar, agendar, reorganizar ou revisar o seu tempo.
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
               {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  className="btn btn-ghost text-xs"
-                  onClick={() => send(s)}
-                >
-                  {s}
+                <button key={s} className="chip" onClick={() => send(s)}>
+                  <span style={{ color: "var(--muted-soft)" }}>›</span>&nbsp;{s}
                 </button>
               ))}
             </div>
@@ -81,11 +81,12 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
         {messages.map((m, i) => (
           <div
             key={i}
-            className="max-w-[85%] rounded-xl px-3 py-2 text-sm"
+            className="max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm"
             style={{
               marginLeft: m.role === "user" ? "auto" : 0,
-              background: m.role === "user" ? "var(--accent)" : "var(--panel-2)",
-              color: m.role === "user" ? "white" : "var(--text)",
+              background: m.role === "user" ? "var(--dark)" : "var(--panel-2)",
+              color: m.role === "user" ? "#f7f2e8" : "var(--text)",
+              border: m.role === "user" ? "none" : "1px solid var(--border)",
             }}
           >
             {m.role === "assistant" ? (
@@ -101,8 +102,8 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
 
         {loading && (
           <div
-            className="max-w-[85%] rounded-xl px-3 py-2 text-sm"
-            style={{ background: "var(--panel-2)", color: "var(--muted)" }}
+            className="max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm"
+            style={{ background: "var(--panel-2)", color: "var(--muted)", border: "1px solid var(--border)" }}
           >
             Trabalhando nisso…
           </div>
@@ -110,23 +111,21 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
       </div>
 
       <form
-        className="p-3 border-t flex gap-2"
-        style={{ borderColor: "var(--border)" }}
+        className="p-4 flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
       >
         <input
-          className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
-          style={{ background: "var(--panel-2)", border: "1px solid var(--border)", color: "var(--text)" }}
-          placeholder="Converse com seu assistente…"
+          className="flex-1 rounded-full px-4 py-2.5 text-sm outline-none"
+          placeholder="Mensagem para o assistente"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
         />
-        <button className="btn btn-primary" disabled={loading || !input.trim()}>
-          Enviar
+        <button className="btn btn-dark flex items-center gap-1.5" disabled={loading || !input.trim()}>
+          Enviar <span aria-hidden>➤</span>
         </button>
       </form>
     </section>

@@ -30,14 +30,21 @@ export default function AgendaPanel({ refreshKey }: { refreshKey: number }) {
     load();
   }, [load, refreshKey]);
 
-  const fmt = (iso: string) =>
-    iso.length > 10
-      ? new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-      : "dia todo";
+  const timeLabel = (iso: string): string => {
+    if (!iso || iso.length <= 10) return "DIA TODO";
+    const d = new Date(iso);
+    const time = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const today = new Date();
+    const isTomorrow = d.getDate() !== today.getDate() || d.getMonth() !== today.getMonth();
+    return isTomorrow ? `AMANHÃ ${time}` : time;
+  };
 
   return (
-    <section className="panel p-5">
-      <h2 className="text-lg font-bold mb-3">📅 Próximas 24 horas</h2>
+    <section className="card p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="icon-badge" aria-hidden>📅</span>
+        <h2 className="serif text-2xl leading-tight">Próximas 24 horas</h2>
+      </div>
 
       {!connected && (
         <p className="text-sm" style={{ color: "var(--muted)" }}>
@@ -46,25 +53,27 @@ export default function AgendaPanel({ refreshKey }: { refreshKey: number }) {
       )}
       {error && <p className="text-sm" style={{ color: "var(--danger)" }}>{error}</p>}
 
-      <ul className="space-y-2">
+      <ul>
         {connected && events.length === 0 && !error && (
           <li className="text-sm" style={{ color: "var(--muted)" }}>
             Nada agendado. Caminho livre 🎉
           </li>
         )}
-        {events.map((e) => (
+        {events.map((e, i) => (
           <li
-            key={e.id}
-            className="flex items-center gap-3 rounded-lg px-3 py-2"
-            style={{ background: "var(--panel-2)" }}
+            key={e.id || i}
+            className="flex items-center gap-4 py-3"
+            style={{ borderTop: i === 0 ? "none" : "1px solid var(--border)" }}
           >
             <span
-              className="text-xs font-mono"
-              style={{ color: "var(--accent-2)", minWidth: 64 }}
+              className="text-xs font-mono uppercase tracking-wide"
+              style={{ color: "var(--muted)", minWidth: 92 }}
             >
-              {fmt(e.start)}
+              {timeLabel(e.start)}
             </span>
-            <span className="text-sm flex-1">{e.summary}</span>
+            <span className="text-sm flex-1" style={{ color: "var(--text)" }}>
+              {e.summary}
+            </span>
           </li>
         ))}
       </ul>

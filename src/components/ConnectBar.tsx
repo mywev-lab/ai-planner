@@ -9,18 +9,10 @@ interface Status {
   calendarConnected: boolean;
 }
 
-function Dot({ ok, label }: { ok: boolean; label: string }) {
+function StatusPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <span className="badge inline-flex items-center gap-1.5">
-      <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 999,
-          background: ok ? "var(--ok)" : "var(--danger)",
-          display: "inline-block",
-        }}
-      />
+    <span className="pill">
+      <span className="dot" style={{ background: ok ? "var(--ok)" : "var(--muted-soft)" }} />
       {label}
     </span>
   );
@@ -39,26 +31,17 @@ export default function ConnectBar() {
   if (!status) return null;
 
   return (
-    <div className="panel p-4 flex items-center justify-between flex-wrap gap-3">
-      <div className="flex items-center gap-2 flex-wrap">
-        <Dot ok={status.openai} label="OpenAI" />
-        <Dot ok={status.supabase} label="Supabase" />
-        <Dot ok={status.calendarConnected} label="Google Calendar" />
-      </div>
-
-      {!status.calendarConnected && (
-        <div className="flex items-center gap-2">
-          {status.googleOAuthConfigured ? (
-            <a className="btn btn-primary" href="/api/auth/google">
-              Conectar Google Calendar
-            </a>
-          ) : (
-            <span className="text-xs" style={{ color: "var(--muted)" }}>
-              Adicione GOOGLE_CLIENT_ID / SECRET ao .env.local para ativar a Agenda
-            </span>
-          )}
-        </div>
+    <div className="flex items-center gap-2 flex-wrap justify-end">
+      {status.calendarConnected ? (
+        <StatusPill ok label="Calendário conectado" />
+      ) : status.googleOAuthConfigured ? (
+        <a className="btn btn-dark" href="/api/auth/google">
+          Conectar Google Calendar
+        </a>
+      ) : (
+        <StatusPill ok={false} label="Calendário desligado" />
       )}
+      <StatusPill ok={status.supabase} label="Tarefas sincronizadas" />
     </div>
   );
 }

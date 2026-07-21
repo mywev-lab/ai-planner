@@ -4,17 +4,27 @@ import { findFreeSlots, listEvents } from "./google/calendar";
 import { isCalendarConnected } from "./google/client";
 import { listTasks } from "./store/tasks";
 import { isSupabaseConfigured } from "./supabase";
+import type { BriefingContent } from "./types";
 
 export interface Briefing {
   generatedAt: string;
-  markdown: string;
+  content: BriefingContent;
   connected: { calendar: boolean; tasks: boolean };
 }
 
+const EMPTY: BriefingContent = {
+  priorities: [],
+  meetings: [],
+  focusBlocks: [],
+  tasksAtRisk: [],
+  productivityTip: null,
+};
+
 /**
- * Builds a proactive daily/weekly briefing: today's priorities, upcoming
- * meetings, suggested focus blocks, tasks at risk, and a productivity tip.
- * Degrades gracefully when Calendar or the tasks DB isn't wired up yet.
+ * Builds a proactive daily/weekly briefing as STRUCTURED sections
+ * (priorities, meetings, focus blocks, tasks at risk, productivity tip),
+ * so the UI can render the editorial layout. Degrades gracefully when
+ * Calendar or the tasks DB isn't wired up yet.
  */
 export async function generateBriefing(range: "day" | "week" = "day"): Promise<Briefing> {
   const now = new Date();
@@ -50,22 +60,29 @@ export async function generateBriefing(range: "day" | "week" = "day"): Promise<B
   const completion = await openai.chat.completions.create({
     model: OPENAI_MODEL,
     temperature: 0.4,
+    response_format: { type: "json_object" },
     messages: [
       {
         role: "system",
         content:
-          "Você é um assistente executivo escrevendo um resumo matinal conciso em " +
-          "Markdown, SEMPRE em português do Brasil (pt-BR). Use estas seções como " +
-          "títulos: **Prioridades de hoje**, **Próximos compromissos**, " +
-          "**Blocos de foco sugeridos**, **Tarefas em risco**, **Dica de " +
-          "produtividade**. Baseie tudo estritamente nos dados fornecidos. " +
-          "Cite horários específicos. Se alguma fonte de dados estiver vazia, diga " +
-          "isso brevemente e dê uma sugestão útil. Mantenha o texto fácil de escanear.",
+          "Você é um assistente executivo que escreve um resumo matinal, SEMPRE em " +
+          "português do Brasil (pt-BR). Responda APENAS com um objeto JSON válido com " +
+          "exatamente estas chaves:\n" +
+          "{\n" +
+          '  "priorities":   [{"title": string, "note": string}],   // prioridades de hoje\n' +
+          '  "meetings":     [{"title": string, "note": string}],   // próximos compromissos (vazio se não houver)\n' +
+          '  "focusBlocks":  [{"time": string, "note": string}],    // blocos de foco sugeridos, time no formato "13:30 — 15:00"\n' +
+          '  "tasksAtRisk":  [{"title": string, "note": string}],   // tarefas em risco\n' +
+          '  "productivityTip": {"title": string, "note": string}   // uma dica de produtividade\n' +
+          "}\n" +
+          "Baseie tudo estritamente nos dados fornecidos. Cite horários específicos. " +
+          "Use no máximo 3 itens por lista. 'note' deve ser uma frase curta. Se uma " +
+          "lista não tiver dados, retorne uma lista vazia []. Não inclua texto fora do JSON.",
       },
       {
         role: "user",
         content:
-          `Aqui estão os dados ${range === "week" ? "da minha semana" : "do meu dia"} em JSON:\n\n` +
+          `Dados ${range === "week" ? "da minha semana" : "do meu dia"} em JSON:\n\n` +
           "```json\n" +
           JSON.stringify(context, null, 2) +
           "\n```",
@@ -73,9 +90,26 @@ export async function generateBriefing(range: "day" | "week" = "day"): Promise<B
     ],
   });
 
+  let content: BriefingContent = EMPTY;
+  try {
+    const parsed = JSON.parse(completion.choices[0].message.content ?? "{}");
+    content = {
+      priorities: Array.isArray(parsed.priorities) ? parsed.priorities : [],
+      meetings: Array.isArray(parsed.meetings) ? parsed.meetings : [],
+      focusBlocks: Array.isArray(parsed.focusBlocks) ? parsed.focusBlocks : [],
+      tasksAtRisk: Array.isArray(parsed.tasksAtRisk) ? parsed.tasksAtRisk : [],
+      productivityTip:
+        parsed.productivityTip && parsed.productivityTip.title
+          ? parsed.productivityTip
+          : null,
+    };
+  } catch {
+    content = EMPTY;
+  }
+
   return {
     generatedAt: now.toISOString(),
-    markdown: completion.choices[0].message.content ?? "",
+    content,
     connected: { calendar: calendarOn, tasks: tasksOn },
   };
 }
