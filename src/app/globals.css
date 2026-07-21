@@ -209,6 +209,19 @@ textarea:focus {
 }
 
 /* ── Briefing / chat rich text ──────────────────────────────── */
+.prose-briefing {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.prose-briefing a {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+.prose-briefing a:hover {
+  color: var(--dark);
+}
 .prose-briefing h2,
 .prose-briefing h3,
 .prose-briefing strong {

@@ -87,6 +87,8 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
               background: m.role === "user" ? "var(--dark)" : "var(--panel-2)",
               color: m.role === "user" ? "#f7f2e8" : "var(--text)",
               border: m.role === "user" ? "none" : "1px solid var(--border)",
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
             }}
           >
             {m.role === "assistant" ? (

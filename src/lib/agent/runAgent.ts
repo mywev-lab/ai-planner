@@ -25,6 +25,9 @@ export function systemPrompt(): string {
     "- For rescheduling, propose an optimized plan (what moves where and why), not " +
       "just a blind move.",
     "- Confirm concrete actions you took with specifics (title, day, time).",
+    "- When you create or reference a calendar event, include its link as a " +
+      "Markdown link like [Abrir no Google Calendar](htmlLink) using the event's " +
+      "htmlLink field. Never paste a raw long URL on its own.",
     "- If Google Calendar isn't connected or a tool returns an error, explain it " +
       "plainly and tell the user how to fix it (e.g. connect Calendar from the dashboard).",
     "- Be concise and action-oriented.",
