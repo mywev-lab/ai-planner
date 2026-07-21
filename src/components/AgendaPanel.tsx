@@ -17,12 +17,12 @@ export default function AgendaPanel({ refreshKey }: { refreshKey: number }) {
         `/api/calendar/events?timeMin=${now.toISOString()}&timeMax=${end.toISOString()}`
       );
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to load events.");
+      if (!res.ok) throw new Error(json.error || "Não foi possível carregar os eventos.");
       setEvents(json.events);
       setConnected(json.connected);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load events.");
+      setError(e instanceof Error ? e.message : "Não foi possível carregar os eventos.");
     }
   }, []);
 
@@ -32,16 +32,16 @@ export default function AgendaPanel({ refreshKey }: { refreshKey: number }) {
 
   const fmt = (iso: string) =>
     iso.length > 10
-      ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      : "all day";
+      ? new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      : "dia todo";
 
   return (
     <section className="panel p-5">
-      <h2 className="text-lg font-bold mb-3">📅 Next 24 hours</h2>
+      <h2 className="text-lg font-bold mb-3">📅 Próximas 24 horas</h2>
 
       {!connected && (
         <p className="text-sm" style={{ color: "var(--muted)" }}>
-          Google Calendar isn&apos;t connected yet.
+          O Google Calendar ainda não está conectado.
         </p>
       )}
       {error && <p className="text-sm" style={{ color: "var(--danger)" }}>{error}</p>}
@@ -49,7 +49,7 @@ export default function AgendaPanel({ refreshKey }: { refreshKey: number }) {
       <ul className="space-y-2">
         {connected && events.length === 0 && !error && (
           <li className="text-sm" style={{ color: "var(--muted)" }}>
-            Nothing scheduled. A clear runway 🎉
+            Nada agendado. Caminho livre 🎉
           </li>
         )}
         {events.map((e) => (

@@ -31,7 +31,7 @@ export default function Home() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">AI Planner</h1>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Your executive assistant for time — a well-orchestrated day.
+            Seu assistente executivo do tempo — um dia bem orquestrado.
           </p>
         </div>
       </header>

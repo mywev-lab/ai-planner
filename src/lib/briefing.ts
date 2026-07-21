@@ -54,17 +54,18 @@ export async function generateBriefing(range: "day" | "week" = "day"): Promise<B
       {
         role: "system",
         content:
-          "You are an executive assistant writing a concise morning briefing in " +
-          "Markdown. Use these sections as headings: **Today's priorities**, " +
-          "**Upcoming meetings**, **Suggested focus blocks**, **Tasks at risk**, " +
-          "**Productivity tip**. Base everything strictly on the provided data. " +
-          "Reference specific times. If a data source is empty, say so briefly and " +
-          "give a helpful suggestion. Keep it skimmable.",
+          "Você é um assistente executivo escrevendo um resumo matinal conciso em " +
+          "Markdown, SEMPRE em português do Brasil (pt-BR). Use estas seções como " +
+          "títulos: **Prioridades de hoje**, **Próximos compromissos**, " +
+          "**Blocos de foco sugeridos**, **Tarefas em risco**, **Dica de " +
+          "produtividade**. Baseie tudo estritamente nos dados fornecidos. " +
+          "Cite horários específicos. Se alguma fonte de dados estiver vazia, diga " +
+          "isso brevemente e dê uma sugestão útil. Mantenha o texto fácil de escanear.",
       },
       {
         role: "user",
         content:
-          `Here is my ${range === "week" ? "week" : "day"} data as JSON:\n\n` +
+          `Aqui estão os dados ${range === "week" ? "da minha semana" : "do meu dia"} em JSON:\n\n` +
           "```json\n" +
           JSON.stringify(context, null, 2) +
           "\n```",

@@ -50,11 +50,11 @@ export default function ConnectBar() {
         <div className="flex items-center gap-2">
           {status.googleOAuthConfigured ? (
             <a className="btn btn-primary" href="/api/auth/google">
-              Connect Google Calendar
+              Conectar Google Calendar
             </a>
           ) : (
             <span className="text-xs" style={{ color: "var(--muted)" }}>
-              Add GOOGLE_CLIENT_ID / SECRET to .env.local to enable Calendar
+              Adicione GOOGLE_CLIENT_ID / SECRET ao .env.local para ativar a Agenda
             </span>
           )}
         </div>

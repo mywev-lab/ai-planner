@@ -10,6 +10,13 @@ const PRIORITY_COLOR: Record<TaskPriority, string> = {
   urgent: "#dc2626",
 };
 
+const PRIORITY_LABEL: Record<TaskPriority, string> = {
+  low: "baixa",
+  medium: "média",
+  high: "alta",
+  urgent: "urgente",
+};
+
 export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState("");
@@ -22,11 +29,11 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
     try {
       const res = await fetch("/api/tasks");
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to load tasks.");
+      if (!res.ok) throw new Error(json.error || "Não foi possível carregar as tarefas.");
       setTasks(json.tasks);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load tasks.");
+      setError(e instanceof Error ? e.message : "Não foi possível carregar as tarefas.");
     }
   }, []);
 
@@ -49,13 +56,13 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to add task.");
+      if (!res.ok) throw new Error(json.error || "Não foi possível adicionar a tarefa.");
       setTitle("");
       setMinutes("");
       setPriority("medium");
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to add task.");
+      setError(e instanceof Error ? e.message : "Não foi possível adicionar a tarefa.");
     } finally {
       setLoading(false);
     }
@@ -77,13 +84,13 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
 
   return (
     <section className="panel p-5">
-      <h2 className="text-lg font-bold mb-3">✅ Tasks</h2>
+      <h2 className="text-lg font-bold mb-3">✅ Tarefas</h2>
 
       <form onSubmit={addTask} className="space-y-2 mb-4">
         <input
           className="w-full rounded-lg px-3 py-2 text-sm outline-none"
           style={{ background: "var(--panel-2)", border: "1px solid var(--border)", color: "var(--text)" }}
-          placeholder="New task…"
+          placeholder="Nova tarefa…"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -94,10 +101,10 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
             value={priority}
             onChange={(e) => setPriority(e.target.value as TaskPriority)}
           >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
+            <option value="low">Baixa</option>
+            <option value="medium">Média</option>
+            <option value="high">Alta</option>
+            <option value="urgent">Urgente</option>
           </select>
           <input
             className="rounded-lg px-2 py-2 text-sm w-24"
@@ -108,7 +115,7 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
             onChange={(e) => setMinutes(e.target.value)}
           />
           <button className="btn btn-primary" disabled={loading || !title.trim()}>
-            Add
+            Adicionar
           </button>
         </div>
       </form>
@@ -118,7 +125,7 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
       <ul className="space-y-2">
         {tasks.length === 0 && !error && (
           <li className="text-sm" style={{ color: "var(--muted)" }}>
-            No tasks yet. Add one, or ask the assistant to plan your day.
+            Nenhuma tarefa ainda. Adicione uma, ou peça ao assistente para planejar seu dia.
           </li>
         )}
         {tasks.map((t) => (
@@ -145,11 +152,11 @@ export default function TaskPanel({ refreshKey }: { refreshKey: number }) {
               ) : null}
             </span>
             <span className="badge" style={{ color: PRIORITY_COLOR[t.priority] }}>
-              {t.priority}
+              {PRIORITY_LABEL[t.priority]}
             </span>
             {t.status === "scheduled" && (
               <span className="badge" style={{ color: "var(--accent-2)" }}>
-                scheduled
+                agendada
               </span>
             )}
             <button

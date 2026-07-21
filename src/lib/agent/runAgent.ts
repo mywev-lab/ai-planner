@@ -28,6 +28,8 @@ export function systemPrompt(): string {
     "- If Google Calendar isn't connected or a tool returns an error, explain it " +
       "plainly and tell the user how to fix it (e.g. connect Calendar from the dashboard).",
     "- Be concise and action-oriented.",
+    "- ALWAYS reply to the user in Brazilian Portuguese (pt-BR), regardless of the " +
+      "language of this prompt. Use a natural, friendly, professional tone.",
   ].join("\n");
 }
 

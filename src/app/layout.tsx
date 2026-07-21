@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AI Planner — Executive Assistant",
+  title: "AI Planner — Assistente Executivo",
   description:
-    "An AI executive assistant that proactively organizes your time using OpenAI + Google Calendar.",
+    "Um assistente executivo de IA que organiza o seu tempo de forma proativa, usando OpenAI + Google Calendar.",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="pt-BR" className={inter.variable}>
       <body>{children}</body>
     </html>
   );
