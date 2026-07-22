@@ -7,6 +7,8 @@ interface Status {
   supabase: boolean;
   googleOAuthConfigured: boolean;
   calendarConnected: boolean;
+  authConfigured: boolean;
+  userEmail: string | null;
 }
 
 function StatusPill({ ok, label }: { ok: boolean; label: string }) {
@@ -42,6 +44,19 @@ export default function ConnectBar() {
         <StatusPill ok={false} label="Calendário desligado" />
       )}
       <StatusPill ok={status.supabase} label="Tarefas sincronizadas" />
+
+      {status.authConfigured &&
+        (status.userEmail ? (
+          <form action="/auth/signout" method="post">
+            <button className="btn btn-ghost" title={status.userEmail}>
+              Sair
+            </button>
+          </form>
+        ) : (
+          <a className="btn btn-ghost" href="/login">
+            Entrar
+          </a>
+        ))}
     </div>
   );
 }

@@ -18,6 +18,13 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  /** Resets the visible conversation only — nothing is deleted server-side. */
+  function clear() {
+    if (loading) return;
+    setMessages([]);
+    setInput("");
+  }
+
   async function send(text: string) {
     const content = text.trim();
     if (!content || loading) return;
@@ -60,6 +67,15 @@ export default function ChatPanel({ onAction }: { onAction?: () => void }) {
             Planeje, agende, revise
           </p>
         </div>
+        <button
+          type="button"
+          className="btn btn-ghost ml-auto flex items-center gap-1.5"
+          onClick={clear}
+          disabled={loading || messages.length === 0}
+          title="Apaga apenas esta conversa — tarefas e agenda não são alteradas"
+        >
+          <span aria-hidden>↺</span> Limpar
+        </button>
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-3 space-y-3">

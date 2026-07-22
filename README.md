@@ -67,6 +67,8 @@ npm install
 | --- | --- |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Cloud Console → APIs & Services → Credentials → **Create OAuth client ID** → *Web application*. Under **Authorized redirect URIs** add `http://localhost:3000/api/auth/google/callback`. Enable the **Google Calendar API** for the project. |
 | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Supabase project → Settings → API. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same page — the public *anon/publishable* key. Used by the login screen. |
+| `ALLOWED_EMAILS` | Comma‑separated allow‑list of e‑mails permitted to sign in. Leave empty to allow any registered account (not recommended). |
 
 > The plain `GOOGLE_CALENDAR_API` key only reads public calendars — reading and
 > writing *your* calendar needs the OAuth credentials above.
@@ -88,12 +90,54 @@ and start planning.
 > On Google's OAuth consent screen while in "Testing" mode, add your Google
 > account as a **Test user** (APIs & Services → OAuth consent screen).
 
+### 5. Sign‑in (Supabase Auth)
+
+The app sits behind a login screen at `/login` — Google sign‑in, or e‑mail +
+password with sign‑up and password recovery.
+
+1. Supabase → **Authentication → Providers → Google**: enable it, paste a Google
+   OAuth client ID/secret, and copy the callback URL Supabase shows into that
+   client's *Authorized redirect URIs* in Google Cloud Console.
+   (This is a **separate** OAuth client concern from the Calendar connection —
+   one signs you *into* the app, the other grants it *your calendar*.)
+2. Supabase → **Authentication → URL Configuration**: set *Site URL* to your
+   deployment and add `http://localhost:3000/auth/callback` plus
+   `https://YOUR-APP/auth/callback` to *Redirect URLs*. Password‑recovery and
+   confirmation e‑mails will not work otherwise.
+3. Set `ALLOWED_EMAILS` to your own address. The sign‑up form is reachable by
+   anyone; the allow‑list is what keeps the app yours.
+
+> `NEXT_PUBLIC_*` variables are inlined at build time — after changing them on
+> Vercel you must redeploy, not just restart.
+
+When `NEXT_PUBLIC_SUPABASE_ANON_KEY` is absent the middleware **does not**
+enforce login, so local development still works before the keys exist. Make sure
+it is set in production.
+
 ## Security notes
 
 - `.env.local` and `ai-planner.env` are git‑ignored. Never commit secrets.
 - The OpenAI key is server‑only. Since it has been stored in plaintext, rotate
   it before deploying anywhere public.
 - OAuth tokens are stored in the `app_settings` table via the service‑role key.
+- `src/middleware.ts` gates every page and API route on a verified Supabase
+  session (`getUser()`, not the unverified cookie) plus the e‑mail allow‑list.
+- Response headers set `X-Robots-Tag: noindex…noai`, `X-Frame-Options: DENY`,
+  `nosniff`, `no-referrer`, a restrictive `Permissions-Policy`, and HSTS.
+
+## Not indexed, not trained on
+
+The app is private and declares it three ways:
+
+- `/robots.txt` (`src/app/robots.ts`) — `Disallow: /` for everyone, plus an
+  explicit rule per AI crawler (GPTBot, ClaudeBot, Google‑Extended, CCBot,
+  PerplexityBot, Bytespider, …), since several ignore a bare wildcard.
+- `/ai.txt` and `/llms.txt` (`src/lib/aiPolicy.ts`) — a stated no‑training,
+  no‑RAG, no‑citation policy.
+- `X-Robots-Tag` headers plus `<meta name="robots">` on every response.
+
+These are consent signals, honoured only by well‑behaved crawlers. The actual
+protection is the login gate — nothing is reachable without a session.
 
 ## Roadmap
 
