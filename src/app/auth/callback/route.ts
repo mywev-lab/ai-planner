@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { getServerAuthClient } from "@/lib/auth/server";
 import { isAuthConfigured, isEmailAllowed } from "@/lib/config";
+import { NEXT_COOKIE } from "@/lib/auth/nextCookie";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,14 +13,31 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: NextRequest) {
   const url = req.nextUrl;
-  const nextParam = url.searchParams.get("next");
-  const next = nextParam && nextParam.startsWith("/") ? nextParam : "/";
 
-  const fail = (reason: string) =>
-    NextResponse.redirect(new URL(`/login?error=${reason}`, url.origin));
+  const cookieNext = req.cookies.get(NEXT_COOKIE)?.value;
+  const next = cookieNext?.startsWith("/") ? cookieNext : "/";
+
+  const fail = (reason: string, detail?: string | null) => {
+    const to = new URL("/login", url.origin);
+    to.searchParams.set("error", reason);
+    if (detail) to.searchParams.set("detail", detail.slice(0, 160));
+    // Surface the real cause in the server log too.
+    console.error(`[auth/callback] ${reason}${detail ? `: ${detail}` : ""}`);
+    const res = NextResponse.redirect(to);
+    res.cookies.delete(NEXT_COOKIE);
+    return res;
+  };
 
   if (!isAuthConfigured()) return fail("not_configured");
-  if (url.searchParams.get("error")) return fail("oauth");
+
+  // The provider or Supabase itself rejected the request.
+  const providerError = url.searchParams.get("error");
+  if (providerError) {
+    return fail(
+      "oauth",
+      url.searchParams.get("error_description") ?? providerError
+    );
+  }
 
   const supabase = await getServerAuthClient();
   const code = url.searchParams.get("code");
@@ -35,10 +53,13 @@ export async function GET(req: NextRequest) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
     authError = error?.message ?? null;
   } else {
+    // No `code` at all: usually the Redirect URL is not on Supabase's
+    // allow-list, or the project is on the implicit flow (tokens arrive in the
+    // URL fragment, which never reaches the server).
     return fail("missing_code");
   }
 
-  if (authError) return fail("exchange");
+  if (authError) return fail("exchange", authError);
 
   // Enforce the allow-list here too: a stranger who completes Google sign-in
   // must not end up with a valid session cookie.
@@ -47,8 +68,10 @@ export async function GET(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!isEmailAllowed(user?.email)) {
     await supabase.auth.signOut();
-    return fail("not_allowed");
+    return fail("not_allowed", user?.email ?? null);
   }
 
-  return NextResponse.redirect(new URL(next, url.origin));
+  const res = NextResponse.redirect(new URL(next, url.origin));
+  res.cookies.delete(NEXT_COOKIE);
+  return res;
 }

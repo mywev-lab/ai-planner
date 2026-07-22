@@ -14,9 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; detail?: string }>;
 }) {
-  const { next, error } = await searchParams;
+  const { next, error, detail } = await searchParams;
   const configured = isAuthConfigured();
 
   if (configured) {
@@ -35,7 +35,12 @@ export default async function LoginPage({
           </p>
         </div>
 
-        <LoginForm configured={configured} next={next} initialError={error} />
+        <LoginForm
+          configured={configured}
+          next={next}
+          initialError={error}
+          errorDetail={detail}
+        />
 
         <p className="mt-6 text-center text-xs" style={{ color: "var(--muted-soft)" }}>
           Área privada · Não indexada por mecanismos de busca

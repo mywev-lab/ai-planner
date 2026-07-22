@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getAuthClient } from "@/lib/auth/client";
+import { rememberNext } from "@/lib/auth/nextCookie";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -25,25 +26,44 @@ const COPY: Record<Mode, { title: string; hint: string; submit: string }> = {
 
 const inputClass = "w-full rounded-2xl px-4 py-2.5 text-sm outline-none";
 
+/** Distinct causes get distinct messages — a single "tente novamente" makes
+ *  a misconfiguration indistinguishable from a wrong password. */
+const CALLBACK_ERRORS: Record<string, string> = {
+  not_allowed: "Esta conta não está na lista de e-mails autorizados (ALLOWED_EMAILS).",
+  not_configured:
+    "O servidor está sem NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY. Confira as variáveis no deploy e refaça o build.",
+  oauth: "O Google ou o Supabase recusou o acesso.",
+  missing_code:
+    "O Supabase não devolveu o código de autorização. Normalmente a URL de callback não está na lista de Redirect URLs do Supabase.",
+  exchange:
+    "O código de autorização não pôde ser trocado por uma sessão. Verifique se a URL de callback do Supabase está registrada no Google Cloud Console.",
+};
+
 export default function LoginForm({
   configured,
   next,
   initialError,
+  errorDetail,
 }: {
   configured: boolean;
   next?: string;
   initialError?: string;
+  errorDetail?: string;
 }) {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
-    initialError === "not_allowed"
-      ? "Esta conta não tem acesso a este AI Planner."
-      : initialError
-        ? "Não foi possível concluir o acesso. Tente novamente."
-        : null
+    initialError
+      ? [
+          CALLBACK_ERRORS[initialError] ??
+            `Não foi possível concluir o acesso (${initialError}).`,
+          errorDetail && `Detalhe: ${errorDetail}`,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : null
   );
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -67,10 +87,10 @@ export default function LoginForm({
     if (!configured || loading) return;
     setError(null);
     setLoading(true);
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(target)}`;
+    rememberNext(target);
     const { error } = await getAuthClient().auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
       setError(translate(error.message));
@@ -98,12 +118,11 @@ export default function LoginForm({
       }
 
       if (mode === "signup") {
+        rememberNext(target);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(target)}`,
-          },
+          options: { emailRedirectTo: `${origin}/auth/callback` },
         });
         if (error) throw error;
         // With e-mail confirmation on, no session comes back yet.
@@ -118,8 +137,9 @@ export default function LoginForm({
       }
 
       if (mode === "forgot") {
+        rememberNext("/auth/reset-password", 3600);
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/auth/reset-password")}`,
+          redirectTo: `${origin}/auth/callback`,
         });
         if (error) throw error;
         setNotice(

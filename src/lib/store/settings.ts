@@ -9,6 +9,9 @@ import { getSupabase, isSupabaseConfigured } from "../supabase";
  * lost on restart in that mode).
  */
 
+// Prefixed: this Supabase project is shared with the New Empire CRM.
+const SETTINGS_TABLE = "ai_planner_settings";
+
 const memory = new Map<string, unknown>();
 
 export interface GoogleTokens {
@@ -28,7 +31,7 @@ async function setSetting(key: string, value: unknown): Promise<void> {
   }
   const supabase = getSupabase();
   const { error } = await supabase
-    .from("app_settings")
+    .from(SETTINGS_TABLE)
     .upsert({ key, value, updated_at: new Date().toISOString() });
   if (error) throw new Error(`Failed to save setting "${key}": ${error.message}`);
 }
@@ -39,7 +42,7 @@ async function getSetting<T>(key: string): Promise<T | null> {
   }
   const supabase = getSupabase();
   const { data, error } = await supabase
-    .from("app_settings")
+    .from(SETTINGS_TABLE)
     .select("value")
     .eq("key", key)
     .maybeSingle();

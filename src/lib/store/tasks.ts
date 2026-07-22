@@ -1,7 +1,8 @@
 import { getSupabase } from "../supabase";
 import type { Task, TaskPriority, TaskStatus } from "../types";
 
-const TABLE = "tasks";
+// Prefixed: this Supabase project is shared with the New Empire CRM.
+const TABLE = "ai_planner_tasks";
 
 export async function listTasks(status?: TaskStatus): Promise<Task[]> {
   const supabase = getSupabase();
