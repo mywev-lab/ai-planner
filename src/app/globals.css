@@ -1,35 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  /* Warm, editorial, "harmonious" cream palette (matches prototype) */
-  --bg: #f3ecdf;
-  --bg-grad-1: #f7f1e7;
-  --bg-grad-2: #efe6d6;
-  --panel: #fffdf9;        /* warm near-white cards */
-  --panel-2: #f6efe3;      /* soft inset surfaces */
-  --panel-3: #f1e9db;      /* deeper inset */
-  --border: #ece3d2;       /* warm hairline */
-  --border-strong: #e2d8c4;
-  --text: #3a342a;         /* warm dark brown — deliberately dark */
-  --text-strong: #2c271e;
-  --muted: #877d6d;        /* warm taupe */
-  --muted-soft: #a99f8d;
-  --accent: #e0a074;       /* terracotta / peach */
-  --accent-strong: #cf8a55;
-  --accent-soft: #f6e2d0;  /* peach tint */
-  --dark: #3d372c;         /* warm dark button */
-  --dark-hover: #4b4436;
-  --ok: #7d9a6c;           /* muted sage */
+  /* Cool sage/teal palette (color1–color5 provided by user) */
+  --bg: #e3dfba;           /* color1 — cream base */
+  --bg-grad-1: #ece7c9;    /* lighter cream */
+  --bg-grad-2: #d3e0d1;    /* cream → sage blend */
+  --panel: #fbfbf1;        /* cool near-white cards */
+  --panel-2: #eef0dd;      /* soft cream-sage inset */
+  --panel-3: #e4e8cf;      /* deeper inset */
+  --border: #d8d8b9;       /* hairline */
+  --border-strong: #c6cba9;
+  --text: #2b322f;         /* near color5, lifted for body */
+  --text-strong: #1a1f1e;  /* color5 */
+  --muted: #5e6a63;        /* muted teal-gray */
+  --muted-soft: #8b968c;
+  --accent: #6cbdb5;       /* color4 — teal */
+  --accent-strong: #3f948c; /* darker teal for links / hover */
+  --accent-soft: #d3ebe7;  /* light teal tint (near color3) */
+  --dark: #1a1f1e;         /* color5 — dark button */
+  --dark-hover: #2b3230;
+  --ok: #6a9d80;           /* sage green (success) */
   --danger: #c2564b;
-  --shadow: 0 1px 2px rgba(58, 52, 42, 0.04), 0 14px 34px rgba(58, 52, 42, 0.07);
-  --shadow-sm: 0 1px 2px rgba(58, 52, 42, 0.05);
+  --shadow: 0 1px 2px rgba(26, 31, 30, 0.05), 0 14px 34px rgba(26, 31, 30, 0.09);
+  --shadow-sm: 0 1px 2px rgba(26, 31, 30, 0.06);
 }
 
 html,
 body {
   background:
     radial-gradient(1100px 620px at 12% -8%, var(--bg-grad-1), transparent 60%),
-    radial-gradient(1000px 520px at 105% 0%, #f4ecdd, transparent 55%),
+    radial-gradient(1000px 520px at 105% 0%, #dfe6d2, transparent 55%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -66,8 +66,8 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 13px;
-  background: linear-gradient(140deg, #efc39a, #e0a074);
-  color: #4a3524;
+  background: linear-gradient(140deg, #93ccc6, #6cbdb5);
+  color: #12312d;
   font-size: 18px;
   flex-shrink: 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);

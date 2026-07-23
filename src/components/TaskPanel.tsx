@@ -11,9 +11,9 @@ const PRIORITY_LABEL: Record<TaskPriority, string> = {
 };
 
 const PRIORITY_STYLE: Record<TaskPriority, { bg: string; color: string }> = {
-  low: { bg: "#eee6d6", color: "#877d6d" },
-  medium: { bg: "#ece0cb", color: "#9a7c4f" },
-  high: { bg: "#f6d9c2", color: "#c1743f" },
+  low: { bg: "#d7ebe7", color: "#3f948c" },
+  medium: { bg: "#e7ecd2", color: "#7c8a4f" },
+  high: { bg: "#f3e3c5", color: "#b0863a" },
   urgent: { bg: "#f2cfc9", color: "#bd524a" },
 };
 
